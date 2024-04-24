@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0.34
+    restart: always
+    ports:
+      - ${DB_PORT}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      TZ: ${TIME_ZONE}
+    volumes:
+      - ./mysql:/var/lib/mysql
