@@ -321,7 +321,7 @@ export class PostController {
             const postIdBinary = binaryUuidAdapter(postId);
             
             for (const categoryId of categoriesId) {
-                const [ categoryData ] = await this.categoryService.getById(categoryId);
+                const categoryData = await this.categoryService.getById(categoryId);
 
                 if (!categoryData)
                     throw CustomError.notFound(REG_NOT_FOUND(`Category id '${ categoryId }'`));
@@ -348,7 +348,7 @@ export class PostController {
             const postIdBinary = binaryUuidAdapter(postId);
             
             for (const categoryId of categoriesId) {
-                const [ categoryData ] = await this.categoryService.getById(categoryId);
+                const categoryData = await this.categoryService.getById(categoryId);
 
                 if (!categoryData)
                     throw CustomError.notFound(REG_NOT_FOUND(`Category id '${ categoryId }'`));
@@ -378,7 +378,7 @@ export class PostController {
             const postIdBinary = binaryUuidAdapter(postId);
 
             for (const tagId of tagsId) {
-                const [ tagData ] = await this.tagService.getById(tagId);
+                const tagData = await this.tagService.getById(tagId);
 
                 if (!tagData)
                     throw CustomError.notFound(REG_NOT_FOUND(`Tag id '${ tagId }'`));
@@ -405,7 +405,7 @@ export class PostController {
             const postIdBinary = binaryUuidAdapter(postId);
 
             for (const tagId of tagsId) {
-                const [ tagData ] = await this.tagService.getById(tagId);
+                const tagData = await this.tagService.getById(tagId);
 
                 if (!tagData)
                     throw CustomError.notFound(REG_NOT_FOUND(`Tag id '${ tagId }'`));

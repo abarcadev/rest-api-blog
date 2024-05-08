@@ -27,7 +27,7 @@ export class CategoryEntity {
         type: "timestamp",
         name: "created_at",
     })
-    createdAt: Date;
+    createdAt: Date | string;
 
     @UpdateDateColumn({
         type: "timestamp",

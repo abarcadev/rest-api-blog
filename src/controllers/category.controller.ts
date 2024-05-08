@@ -1,11 +1,7 @@
 import { Request, Response } from "express";
 import { CategoryService } from "../services/typeorm";
 import { resError } from "../utils/response-errors";
-import { 
-    BodySaveCategoryI, 
-    ParamsGetAllCategoriesI, 
-    ResponseGetAllCategoriesI 
-} from "../interfaces/category.interface";
+import { BodySaveCategoryI, ParamsGetAllCategoriesI } from "../interfaces/category.interface";
 import { StatusCodeEnum } from "../enums/status-code.enum";
 import { CategoryEntity } from "../entities/typeorm";
 import { CustomError } from "../config/custom-error";
@@ -21,18 +17,12 @@ export class CategoryController {
         try {
             const query = req.query as unknown as ParamsGetAllCategoriesI;
 
-            const categoriesData = await this.categoryService.getAll(query);
-
-            let data: ResponseGetAllCategoriesI[] = [];
-
-            if (categoriesData.length > 0)
-                data = categoriesData;
-
-            const [ quantity ] = await this.categoryService.getAllCount(query);
+            const data  = await this.categoryService.getAll(query);
+            const total = await this.categoryService.getAllCount(query);
 
             return res.status(StatusCodeEnum.Ok).json({
                 data,
-                total: Number(quantity.regs)
+                total
             });
         } catch (error) {
             resError(error, res);
@@ -45,7 +35,7 @@ export class CategoryController {
 
             const { name } = payload;
 
-            const [ nameData ] = await this.categoryService.getByName(name);
+            const nameData = await this.categoryService.getByName(name);
 
             if (nameData)
                 throw CustomError.badRequest(DATA_ALREADY_EXIST(`name '${ name }'`));

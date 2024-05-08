@@ -1,11 +1,7 @@
 import { Request, Response } from "express";
 import { TagService } from "../services/typeorm";
 import { resError } from "../utils/response-errors";
-import { 
-    BodySaveTagsI, 
-    ParamsGetAllTagsI, 
-    ResponseGetAllTagsI 
-} from "../interfaces/tag.interface";
+import { BodySaveTagsI, ParamsGetAllTagsI } from "../interfaces/tag.interface";
 import { StatusCodeEnum } from "../enums/status-code.enum";
 import { TagEntity } from "../entities/typeorm";
 import { CustomError } from "../config/custom-error";
@@ -21,18 +17,12 @@ export class TagController {
         try {
             const query = req.query as unknown as ParamsGetAllTagsI;
 
-            const tagsData = await this.tagService.getAll(query);
-
-            let data: ResponseGetAllTagsI[] = [];
-
-            if (tagsData.length > 0)
-                data = tagsData;
-
-            const [ quantity ] = await this.tagService.getAllCount(query);
+            const data  = await this.tagService.getAll(query);
+            const total = await this.tagService.getAllCount(query);
 
             return res.status(StatusCodeEnum.Ok).json({
                 data,
-                total: Number(quantity.regs)
+                total
             });
         } catch (error) {
             resError(error, res);
@@ -45,7 +35,7 @@ export class TagController {
 
             const { name } = payload;
 
-            const [ nameData ] = await this.tagService.getByName(name);
+            const nameData = await this.tagService.getByName(name);
 
             if (nameData)
                 throw CustomError.badRequest(DATA_ALREADY_EXIST(`name '${ name }'`));

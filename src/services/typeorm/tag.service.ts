@@ -1,82 +1,56 @@
+import { Like } from "typeorm";
 import { dbConnection } from "../../database/typeorm.connection";
 import { TagEntity } from "../../entities/typeorm";
-import { 
-    ParamsGetAllTagsI, 
-    ResponseGetAllTagsI, 
-    ResponseGetByIdTagI 
-} from "../../interfaces/tag.interface";
+import { ParamsGetAllTagsI } from "../../interfaces/tag.interface";
 
 export class TagService {
 
     private readonly tagRepository = dbConnection.getRepository(TagEntity);
     
-    getAll(params: ParamsGetAllTagsI): Promise<ResponseGetAllTagsI[]> {
-        return this.tagRepository.query(
-            `
-            SELECT
-                id,
-                name
-            FROM
-                tags
-            WHERE
-                name LIKE ?
-            AND created_at LIKE ?
-            ORDER BY created_at
-            LIMIT ${ params.limit } OFFSET ${ params.skip };
-            `,
-            [
-                `%${ params.name }%`,
-                `%${ params.createdAt }%`
-            ]
-        )
+    getAll(params: ParamsGetAllTagsI): Promise<TagEntity[]> {
+        return this.tagRepository.find({
+            select: {
+                id: true,
+                name: true
+            },
+            where: {
+                name: Like(`%${ params.name }%`),
+                createdAt: Like(`${ params.createdAt }%`)
+            },
+            order: {
+                createdAt: 'ASC'
+            },
+            skip: params.skip,
+            take: params.limit
+        });
+
     }
 
-    getAllCount(params: ParamsGetAllTagsI): Promise<any[]> {
-        return this.tagRepository.query(
-            `
-            SELECT
-                COUNT(*) AS regs
-            FROM
-                tags
-            WHERE
-                name LIKE ?
-            AND created_at LIKE ?;
-            `,
-            [
-                `%${ params.name }%`,
-                `%${ params.createdAt }%`
-            ]
-        );
+    getAllCount(params: ParamsGetAllTagsI): Promise<number> {
+        return this.tagRepository.countBy({
+            name: Like(`%${ params.name }%`),
+            createdAt: Like(`${ params.createdAt }%`)
+        });
     }
 
-    getById(id: number): Promise<ResponseGetByIdTagI[]> {
-        return this.tagRepository.query(
-            `
-            SELECT
-                id,
-                name
-            FROM
-                tags
-            WHERE
-                id = ?;
-            `,
-            [ id ]
-        );
+    getById(id: number): Promise<TagEntity | null> {
+        return this.tagRepository.findOne({
+            select: {
+                id: true,
+                name: true
+            },
+            where: { id }
+        });
     }
 
-    getByName(name: string): Promise<ResponseGetByIdTagI[]> {
-        return this.tagRepository.query(
-            `
-            SELECT
-                id,
-                name
-            FROM
-                tags
-            WHERE
-                name = ?;
-            `,
-            [ name ]
-        );
+    getByName(name: string): Promise<TagEntity | null> {
+        return this.tagRepository.findOne({
+            select: {
+                id: true,
+                name: true
+            },
+            where: { name }
+        });
     }
 
     insert(tag: TagEntity): Promise<TagEntity> {
