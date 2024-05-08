@@ -1,87 +1,85 @@
-import { DeleteResult, UpdateResult } from "typeorm";
+import { 
+    DeleteResult, 
+    Like, 
+    UpdateResult 
+} from "typeorm";
 import { dbConnection } from "../../database/typeorm.connection";
 import { CommentEntity } from "../../entities/typeorm";
-import { ResponseGetByIdPostI } from "../../interfaces/post.interface";
-import { ParamsGetAllCommentsI, ResponseGetAllCommentsI } from "../../interfaces/comment.interface";
+import { ParamsGetAllCommentsI } from "../../interfaces/comment.interface";
 
 export class CommentService {
 
     private readonly commentRepository = dbConnection.getRepository(CommentEntity);
 
-    getAll(params: ParamsGetAllCommentsI): Promise<ResponseGetAllCommentsI[]> {
-        return this.commentRepository.query(
-            `
-            SELECT
-                comments.id,
-                comments.content,
-                users.username,
-                posts.title AS postTitle,
-                DATE_FORMAT(comments.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
-                DATE_FORMAT(comments.updated_at, '%Y-%m-%d %H:%i:%s') AS updatedAt
-            FROM
-                comments
-            INNER JOIN users ON comments.user_id = users.id
-            INNER JOIN posts ON comments.post_id = posts.id
-            WHERE
-                comments.content LIKE ?
-            AND users.username LIKE ?
-            AND posts.title LIKE ?
-            AND comments.created_at LIKE ?
-            ORDER BY comments.id
-            LIMIT ${ params.limit } OFFSET ${ params.skip };
-            `,
-            [
-                `%${ params.content }%`,
-                `%${ params.username }%`,
-                `%${ params.postTitle }%`,
-                `%${ params.createdAt }%`,
-            ]
-        );
+    getAll(params: ParamsGetAllCommentsI): Promise<CommentEntity[]> {
+        return this.commentRepository.find({
+            select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                updatedAt: true,
+                user: {
+                    username: true,
+                },
+                post: {
+                    title: true
+                }
+            },
+            relations: {
+                user: true,
+                post: true
+            },
+            where: {
+                content: Like(`%${ params.content }%`),
+                createdAt: Like(`${ params.createdAt }%`),
+                user: {
+                    username: Like(`%${ params.username }%`)
+                },
+                post: {
+                    title: Like(`%${ params.postTitle }%`)
+                }
+            },
+            order: {
+                id: 'ASC'
+            },
+            skip: params.skip,
+            take: params.limit
+        });
     }
 
-    getAllCount(params: ParamsGetAllCommentsI): Promise<any[]> {
-        return this.commentRepository.query(
-            `
-            SELECT
-                COUNT(*) AS regs
-            FROM
-                comments
-            INNER JOIN users ON comments.user_id = users.id
-            INNER JOIN posts ON comments.post_id = posts.id
-            WHERE
-                comments.content LIKE ?
-            AND users.username LIKE ?
-            AND posts.title LIKE ?
-            AND comments.created_at LIKE ?;
-            `,
-            [
-                `%${ params.content }%`,
-                `%${ params.username }%`,
-                `%${ params.postTitle }%`,
-                `%${ params.createdAt }%`,
-            ]
-        );
+    getAllCount(params: ParamsGetAllCommentsI): Promise<number> {
+        return this.commentRepository.countBy({
+            content: Like(`%${ params.content }%`),
+            createdAt: Like(`${ params.createdAt }%`),
+            user: {
+                username: Like(`%${ params.username }%`)
+            },
+            post: {
+                title: Like(`%${ params.postTitle }%`)
+            }
+        });
     }
 
-    getById(id: number): Promise<ResponseGetByIdPostI[]> {
-        return this.commentRepository.query(
-            `
-            SELECT
-                comments.id,
-                comments.content,
-                users.username,
-                posts.title AS postTitle,
-                DATE_FORMAT(comments.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
-                DATE_FORMAT(comments.updated_at, '%Y-%m-%d %H:%i:%s') AS updatedAt
-            FROM
-                comments
-            INNER JOIN users ON comments.user_id = users.id
-            INNER JOIN posts ON comments.post_id = posts.id
-            WHERE
-                comments.id = ?;
-            `,
-            [ id ]
-        );
+    getById(id: number): Promise<CommentEntity | null> {
+        return this.commentRepository.findOne({
+            select: { 
+                id: true,
+                content: true,
+                createdAt: true,
+                updatedAt: true,
+                user: {
+                    username: true
+                },
+                post: {
+                    title: true
+                }
+            },
+            relations: {
+                user: true,
+                post: true
+            },
+            where: { id }
+        });
     }
 
     insert(comment: CommentEntity): Promise<CommentEntity> {

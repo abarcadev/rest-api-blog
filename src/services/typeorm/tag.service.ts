@@ -23,7 +23,6 @@ export class TagService {
             skip: params.skip,
             take: params.limit
         });
-
     }
 
     getAllCount(params: ParamsGetAllTagsI): Promise<number> {

@@ -5,11 +5,7 @@ import {
     UserService 
 } from "../services/typeorm";
 import { resError } from "../utils/response-errors";
-import { 
-    BodySaveCommentI, 
-    ParamsGetAllCommentsI, 
-    ResponseGetAllCommentsI 
-} from "../interfaces/comment.interface";
+import { BodySaveCommentI, ParamsGetAllCommentsI } from "../interfaces/comment.interface";
 import { CustomError } from "../config/custom-error";
 import { REG_DELETED, REG_NOT_FOUND } from "../utils/messages";
 import { CommentEntity } from "../entities/typeorm";
@@ -28,18 +24,12 @@ export class CommentController {
         try {
             const query = req.query as unknown as ParamsGetAllCommentsI;
 
-            const commentsData = await this.commentService.getAll(query);
-
-            let data: ResponseGetAllCommentsI[] = [];
-
-            if (commentsData.length > 0)
-                data = commentsData;
-
-            const [ quantity ] = await this.commentService.getAllCount(query);
+            const data  = await this.commentService.getAll(query);
+            const total = await this.commentService.getAllCount(query);
 
             return res.status(StatusCodeEnum.Ok).json({
                 data,
-                total: Number(quantity.regs)
+                total
             });
         } catch (error) {
             resError(error, res);
@@ -50,7 +40,7 @@ export class CommentController {
         try {
             const id = Number(req.params.id);
 
-            let [ data ] = await this.commentService.getById(id);
+            const data = await this.commentService.getById(id);
 
             if (!data)
                 throw CustomError.notFound(REG_NOT_FOUND(`Comment id '${ id }'`));
@@ -100,7 +90,7 @@ export class CommentController {
 
             const { content } = req.body as BodySaveCommentI;
 
-            const [ commentData ] = await this.commentService.getById(id);
+            const commentData = await this.commentService.getById(id);
 
             if (!commentData)
                 throw CustomError.notFound(REG_NOT_FOUND(`Comment id '${ id }'`));
@@ -120,7 +110,7 @@ export class CommentController {
         try {
             const id = Number(req.params.id);
 
-            const [ commentData ] = await this.commentService.getById(id);
+            const commentData = await this.commentService.getById(id);
 
             if (!commentData)
                 throw CustomError.notFound(REG_NOT_FOUND(`Comment id '${ id }'`));

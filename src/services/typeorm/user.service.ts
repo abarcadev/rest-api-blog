@@ -1,6 +1,10 @@
 import { dbConnection } from "../../database/typeorm.connection";
 import { UserEntity } from "../../entities/typeorm";
-import { ParamsGetAllUsersI, ResponseGetAllUsersI, ResponseGetByIdUserI } from "../../interfaces/user.interface";
+import { 
+    ParamsGetAllUsersI, 
+    ResponseGetAllUsersI, 
+    ResponseGetByIdUserI 
+} from "../../interfaces/user.interface";
 
 export class UserService {
 
